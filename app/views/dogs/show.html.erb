@@ -1,13 +1,22 @@
 <section>
   <h2><%= @dog.name %></h2>
-
+  <h2>Likes: <%= @dog.likes.count %> </h2>
+  <% if current_user && !current_user.is_dogs_owner?(@dog) %>
+    <% previously_liked = @dog.likes.find { |like| like.user_id == current_user.id} %>
+    <% if previously_liked %>
+      <%= button_to 'Unlike', dog_like_path(@dog), method: :delete %>
+    <% else %>
+      <%= button_to 'Like', dog_likes_path(@dog), method: :post %>
+    <% end %>
+  <% end %>
   <% @dog.images.each do |image| %>
     <%= image_tag url_for(image), alt: "Photo of #{@dog.name}" %>
   <% end %>
 
   <p><%= @dog.description %></p>
-
-  <%= link_to "Edit #{@dog.name}'s Profile", edit_dog_path %>
-  <br>
-  <%= link_to "Delete #{@dog.name}'s Profile", dog_path, method: :delete, data: { confirm: 'Are you sure?' } %>
+  <% if current_user && current_user.is_dogs_owner?(@dog)%>
+    <%= link_to "Edit #{@dog.name}'s Profile", edit_dog_path %>
+    <br>
+    <%= link_to "Delete #{@dog.name}'s Profile", dog_path, method: :delete, data: { confirm: 'Are you sure?' } %>
+  <% end %>
 </section>

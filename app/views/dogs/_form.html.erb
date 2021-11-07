@@ -1,7 +1,11 @@
 <%= simple_form_for @dog do |f| %>
   <%= f.input :name %>
   <%= f.input :description, as: :text %>
-  <%= f.input :image, as: :file %>
+  <%# 
+  not sure if i should have added multiple fields here or allow the user to choose multiple images in one upload?
+  allowing the user to choose multiple in one upload might now be the best UX but did not want to limit it for now.
+  %>
+  <%= f.file_field :images, as: :file, multiple: true%>
 
   <% if @dog.images.any? %>
     <%= image_tag @dog.images.first %>

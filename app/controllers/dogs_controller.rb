@@ -1,10 +1,15 @@
 class DogsController < ApplicationController
   before_action :set_dog, only: [:show, :edit, :update, :destroy]
 
+  DOGS_PER_PAGE = 5.freeze
+
   # GET /dogs
   # GET /dogs.json
   def index
-    @dogs = Dog.all
+    # not entirely scalable basic pagination, could possibly use will_paginate gem
+    @page = params.fetch(:page, 0).to_i
+    @dogs = Dog.offset(@page * DOGS_PER_PAGE).limit(DOGS_PER_PAGE)
+    @total_pages = (Dog.count / DOGS_PER_PAGE.to_f).ceil
   end
 
   # GET /dogs/1
@@ -25,10 +30,11 @@ class DogsController < ApplicationController
   # POST /dogs.json
   def create
     @dog = Dog.new(dog_params)
+    @dog.assign_owner(current_user.id)
 
     respond_to do |format|
       if @dog.save
-        @dog.images.attach(params[:dog][:image]) if params[:dog][:image].present?
+        @dog.images.attach(params[:dog][:images]) if params[:dog][:images].present?
 
         format.html { redirect_to @dog, notice: 'Dog was successfully created.' }
         format.json { render :show, status: :created, location: @dog }
@@ -43,6 +49,7 @@ class DogsController < ApplicationController
   # PATCH/PUT /dogs/1.json
   def update
     respond_to do |format|
+      format.html { redirect_to @dog, notice: "Only the owner can update, dog was not updated" } unless current_user && current_user.is_dogs_owner?(@dog)
       if @dog.update(dog_params)
         @dog.images.attach(params[:dog][:image]) if params[:dog][:image].present?
 
